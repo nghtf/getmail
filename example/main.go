@@ -8,29 +8,34 @@ import (
 	"os"
 )
 
+var log *slog.Logger
+
 func main() {
 
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
-	var Getmail getmail.TConfig
+	var config getmail.TConfig
 
-	getmail, err := getmail.New(log, &Getmail)
+	config.RCfile = "./getmail.rc"
+
+	gm, err := (&getmail.TGetmail{}).New(log, &config)
 	if err != nil {
-		log.Error("getmail.New() failed", "error", err)
+		log.Error("failed to configure getmail", "error", err)
+		return
 	}
 
-	err := getmail.Fetch()
+	err = gm.Fetch()
 	if err != nil {
-		log.Error("getmail.Fetch() failed", "error", err)
-	}
-	if err := getmail.MailDir.Dispatch(handler); err != nil {
-		log.Error("getmail.MailDir.Dispatch() failed", "error", err)
-
+		log.Error("failed to fetch from mailbox", "error", err)
+		return
 	}
 
+	if err := gm.MailDir.Dispatch(handler); err != nil {
+		log.Error("dispatching failed", "error", err)
+	}
 }
 
 func handler(file string) error {
-	log.Info("recieved", "filename", file)
+	log.Info("file recieved", "name", file)
 	return nil
 }
