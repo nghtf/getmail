@@ -2,6 +2,7 @@
 
 Expects getmail.rc like this
 
+```
 [retriever]
 type = SimplePOP3SSLRetriever
 server = pop.gmail.com
@@ -14,3 +15,4 @@ path = ./maildir/
 
 [options]
 delete = false
+```
